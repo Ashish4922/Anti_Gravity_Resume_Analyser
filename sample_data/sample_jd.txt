@@ -1,0 +1,20 @@
+Senior Full-Stack Engineer (Python / React / Cloud)
+
+About the Role:
+We are looking for an experienced Senior Full-Stack Software Engineer to build and scale our next-generation cloud analytics platform. You will collaborate closely with product management and engineering leadership to architect fault-tolerant distributed systems and intuitive user interfaces.
+
+Key Responsibilities:
+• Design, develop, and maintain high-performance backend microservices in Python (FastAPI / Django) or Go.
+• Build scalable, modern frontend applications using React, TypeScript, Next.js, and modern CSS tooling.
+• Work with cloud infrastructure on AWS (EKS, EC2, S3, RDS) and orchestrate deployments via Docker and Kubernetes.
+• Optimize database performance and query efficiency on PostgreSQL and Redis.
+• Champion engineering excellence, automated testing (unit and integration tests), and continuous integration (CI/CD).
+• Collaborate effectively across cross-functional teams and mentor junior engineers in an Agile/Scrum environment.
+
+Requirements:
+• 5+ years of software engineering experience in backend or full-stack development.
+• Strong proficiency in Python or Go, and modern JavaScript/TypeScript frameworks (React, Next.js).
+• Hands-on experience with Docker, Kubernetes, and AWS cloud environments.
+• Solid background in relational databases (PostgreSQL) and caching strategies (Redis).
+• Familiarity with CI/CD automation pipelines and infrastructure as code (Terraform).
+• Strong communication skills, leadership mindset, and passion for clean code.

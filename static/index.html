@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ResuMetrics | Minimalist Local Resume & ATS Analyzer</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: '#f0fdf4',
+              500: '#22c55e',
+              600: '#16a34a',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="bg-zinc-950 text-zinc-100 min-h-screen antialiased flex flex-col selection:bg-zinc-700 selection:text-white">
+
+  <!-- Minimal Header -->
+  <header class="border-b border-zinc-800/80 bg-zinc-950/70 backdrop-blur sticky top-0 z-40">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <div class="w-8 h-8 rounded-lg bg-zinc-100 text-zinc-900 dark:bg-white flex items-center justify-center font-bold text-lg shadow-sm">
+          <span>R</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="font-semibold text-base tracking-tight text-white dark:text-zinc-100">ResuMetrics</span>
+          <span class="text-xs px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono flex items-center gap-1.5">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 pulse-indicator"></span>
+            Localhost Engine
+          </span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 sm:gap-3">
+        <button id="load-sample-btn" class="px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-md transition-colors flex items-center gap-1.5">
+          <i data-lucide="sparkles" class="w-3.5 h-3.5 text-amber-400"></i>
+          <span>Load Demo Sample</span>
+        </button>
+        <button id="theme-toggle" class="p-2 text-zinc-400 hover:text-zinc-200 bg-zinc-900 border border-zinc-800 rounded-md transition-colors" title="Toggle Theme">
+          <i data-lucide="sun" id="theme-icon" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 py-8">
+    
+    <!-- Hero / Subtitle -->
+    <div id="intro-banner" class="mb-8 text-center sm:text-left">
+      <h1 class="text-2xl sm:text-3xl font-semibold tracking-tight text-zinc-100">Local Resume & ATS Analyzer</h1>
+      <p class="text-zinc-400 text-sm mt-1 max-w-2xl">
+        Private, instant analysis running 100% locally on your machine. Evaluates ATS compatibility, quantifiable impact, power verbs, and job description alignment.
+      </p>
+    </div>
+
+    <!-- Input Section -->
+    <div id="input-section" class="space-y-6">
+      
+      <!-- Resume Upload Card -->
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 sm:p-6 backdrop-blur-sm">
+        
+        <!-- Toggle: File Upload vs Text Paste -->
+        <div class="flex items-center justify-between mb-4 pb-3 border-b border-zinc-800/80">
+          <div class="flex items-center gap-2">
+            <button id="tab-mode-file" class="px-3 py-1.5 text-xs font-medium rounded-lg bg-zinc-800 text-white border border-zinc-700 transition">
+              <i data-lucide="file-up" class="w-3.5 h-3.5 inline mr-1"></i> File Upload (PDF, DOCX, TXT)
+            </button>
+            <button id="tab-mode-text" class="px-3 py-1.5 text-xs font-medium rounded-lg text-zinc-400 hover:text-zinc-200 transition">
+              <i data-lucide="type" class="w-3.5 h-3.5 inline mr-1"></i> Paste Text
+            </button>
+          </div>
+          <span class="text-xs text-zinc-500 hidden sm:inline">Zero data leaves your machine</span>
+        </div>
+
+        <!-- Mode 1: Drag & Drop Zone -->
+        <div id="file-upload-mode">
+          <div id="dropzone" class="dropzone border-2 border-dashed border-zinc-700/80 hover:border-zinc-500 rounded-xl p-8 sm:p-10 text-center cursor-pointer transition-all bg-zinc-950/40">
+            <input type="file" id="file-input" class="hidden" accept=".pdf,.docx,.txt">
+            <div class="flex flex-col items-center justify-center gap-3">
+              <div class="w-12 h-12 rounded-full bg-zinc-800/80 border border-zinc-700 flex items-center justify-center text-zinc-300">
+                <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+              </div>
+              <div>
+                <p class="text-sm font-medium text-zinc-200">
+                  <span class="text-blue-400 hover:underline">Click to browse</span> or drag and drop your resume
+                </p>
+                <p class="text-xs text-zinc-500 mt-1">Supports PDF, DOCX, or TXT (Max 10MB)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- File Selected Preview -->
+          <div id="file-selected-badge" class="hidden mt-3 p-3 bg-zinc-950 border border-zinc-800 rounded-lg flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <i data-lucide="file-check" class="w-5 h-5 text-emerald-400"></i>
+              <div>
+                <p id="selected-filename" class="text-sm font-medium text-zinc-200">resume.pdf</p>
+                <p id="selected-filesize" class="text-xs text-zinc-500">120 KB</p>
+              </div>
+            </div>
+            <button id="remove-file-btn" class="p-1 text-zinc-500 hover:text-red-400 transition" title="Remove file">
+              <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mode 2: Paste Raw Text -->
+        <div id="text-paste-mode" class="hidden">
+          <textarea id="resume-raw-textarea" rows="8" placeholder="Paste your complete resume text here (Summary, Experience, Education, Skills)..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3.5 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500 font-mono transition"></textarea>
+        </div>
+
+        <!-- Collapsible Job Description Panel -->
+        <div class="mt-5 pt-4 border-t border-zinc-800/80">
+          <button id="toggle-jd-btn" class="flex items-center justify-between w-full text-left text-xs font-medium text-zinc-400 hover:text-zinc-200 transition">
+            <span class="flex items-center gap-2">
+              <i data-lucide="briefcase" class="w-4 h-4 text-zinc-500"></i>
+              <span>Match Against Job Description (Optional)</span>
+              <span class="px-2 py-0.5 rounded text-[10px] bg-zinc-800 text-zinc-400">ATS Keyword Gap Analysis</span>
+            </span>
+            <i data-lucide="chevron-down" id="jd-chevron" class="w-4 h-4 transition-transform duration-200"></i>
+          </button>
+
+          <div id="jd-container" class="hidden mt-3 space-y-2">
+            <div class="flex justify-between items-center text-xs text-zinc-500">
+              <span>Paste the target job requirements or description below:</span>
+              <button id="insert-sample-jd-btn" class="text-blue-400 hover:text-blue-300 transition text-xs">Use Sample Software Engineer JD</button>
+            </div>
+            <textarea id="jd-textarea" rows="5" placeholder="Paste target job responsibilities, required skills, and qualification bullet points..." class="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-3 text-xs text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-zinc-500 font-mono transition"></textarea>
+          </div>
+        </div>
+
+        <!-- Action Button -->
+        <div class="mt-6 flex flex-col sm:flex-row items-center justify-end gap-3">
+          <button id="clear-btn" class="w-full sm:w-auto px-4 py-2 text-xs font-medium text-zinc-400 hover:text-zinc-200 bg-transparent hover:bg-zinc-800 rounded-lg transition">
+            Clear
+          </button>
+          <button id="analyze-btn" class="w-full sm:w-auto px-6 py-2.5 text-sm font-medium bg-zinc-100 hover:bg-white text-zinc-900 rounded-lg shadow-sm transition flex items-center justify-center gap-2 font-medium">
+            <span id="analyze-btn-text">Analyze Resume</span>
+            <i data-lucide="arrow-right" class="w-4 h-4" id="analyze-btn-icon"></i>
+            <div id="analyze-spinner" class="hidden w-4 h-4 border-2 border-zinc-900 border-t-transparent rounded-full animate-spin"></div>
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Results Section (Initially Hidden) -->
+    <div id="results-section" class="hidden space-y-6 mt-8">
+      
+      <!-- Top Overview Card with Gauge & KPIs -->
+      <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-6 backdrop-blur-sm">
+        <div class="flex flex-col lg:flex-row items-center justify-between gap-6 pb-6 border-b border-zinc-800/80">
+          
+          <!-- Score Gauge & Title -->
+          <div class="flex items-center gap-6 w-full lg:w-auto">
+            <div class="relative w-28 h-28 flex items-center justify-center flex-shrink-0">
+              <svg class="w-full h-full" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" class="text-zinc-800" fill="transparent" />
+                <circle id="score-ring" cx="50" cy="50" r="40" stroke="currentColor" stroke-width="8" stroke-linecap="round" class="score-circle text-emerald-500" fill="transparent" stroke-dasharray="251.2" stroke-dashoffset="251.2" />
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span id="score-number" class="text-2xl font-bold text-white tracking-tight">0</span>
+                <span class="text-[10px] uppercase font-mono text-zinc-400">Score</span>
+              </div>
+            </div>
+
+            <div class="space-y-1">
+              <div class="flex items-center gap-2">
+                <span id="score-grade" class="px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Ready
+                </span>
+                <span id="result-filename" class="text-xs text-zinc-400 font-mono">resume.pdf</span>
+              </div>
+              <h2 id="candidate-name" class="text-xl font-bold text-white">Alexander Chen</h2>
+              <!-- Contact Links Bar -->
+              <div id="contact-chips" class="flex flex-wrap items-center gap-2 pt-1 text-xs text-zinc-400">
+                <!-- Dynamically filled -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex items-center gap-2 self-end lg:self-center w-full lg:w-auto justify-end">
+            <button id="print-report-btn" class="px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition flex items-center gap-1.5" title="Print or save as PDF">
+              <i data-lucide="printer" class="w-3.5 h-3.5"></i>
+              <span>Save PDF</span>
+            </button>
+            <button id="copy-summary-btn" class="px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition flex items-center gap-1.5" title="Copy summary to clipboard">
+              <i data-lucide="copy" class="w-3.5 h-3.5"></i>
+              <span>Copy Summary</span>
+            </button>
+            <button id="export-json-btn" class="px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition flex items-center gap-1.5" title="Download raw JSON">
+              <i data-lucide="download" class="w-3.5 h-3.5"></i>
+              <span>Export JSON</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-6">
+          
+          <div class="p-3.5 rounded-lg bg-zinc-950/60 border border-zinc-800">
+            <div class="flex items-center justify-between text-zinc-400 text-xs mb-1">
+              <span>JD Compatibility</span>
+              <i data-lucide="target" class="w-3.5 h-3.5 text-blue-400"></i>
+            </div>
+            <div id="kpi-match" class="text-xl font-bold text-white tracking-tight">N/A</div>
+            <p id="kpi-match-sub" class="text-[11px] text-zinc-500 mt-0.5">No JD provided</p>
+          </div>
+
+          <div class="p-3.5 rounded-lg bg-zinc-950/60 border border-zinc-800">
+            <div class="flex items-center justify-between text-zinc-400 text-xs mb-1">
+              <span>Skills Detected</span>
+              <i data-lucide="cpu" class="w-3.5 h-3.5 text-emerald-400"></i>
+            </div>
+            <div id="kpi-skills" class="text-xl font-bold text-white tracking-tight">0</div>
+            <p id="kpi-skills-sub" class="text-[11px] text-zinc-500 mt-0.5">Across 6 categories</p>
+          </div>
+
+          <div class="p-3.5 rounded-lg bg-zinc-950/60 border border-zinc-800">
+            <div class="flex items-center justify-between text-zinc-400 text-xs mb-1">
+              <span>Quantifiable Impact</span>
+              <i data-lucide="trending-up" class="w-3.5 h-3.5 text-purple-400"></i>
+            </div>
+            <div id="kpi-impact" class="text-xl font-bold text-white tracking-tight">0%</div>
+            <p id="kpi-impact-sub" class="text-[11px] text-zinc-500 mt-0.5">Bullets with metrics</p>
+          </div>
+
+          <div class="p-3.5 rounded-lg bg-zinc-950/60 border border-zinc-800">
+            <div class="flex items-center justify-between text-zinc-400 text-xs mb-1">
+              <span>Action Verbs</span>
+              <i data-lucide="zap" class="w-3.5 h-3.5 text-amber-400"></i>
+            </div>
+            <div id="kpi-verbs" class="text-xl font-bold text-white tracking-tight">0</div>
+            <p id="kpi-verbs-sub" class="text-[11px] text-zinc-500 mt-0.5">Power verbs identified</p>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Navigation Tabs for Detailed Breakdown -->
+      <div class="flex border-b border-zinc-800 space-x-1 sm:space-x-3 text-xs sm:text-sm overflow-x-auto pb-1 no-print">
+        <button data-tab="tab-checklist" class="tab-btn px-3 py-2 font-medium rounded-t-lg border-b-2 border-emerald-500 text-emerald-400 transition">
+          ATS Health & Checklist
+        </button>
+        <button data-tab="tab-skills" class="tab-btn px-3 py-2 font-medium rounded-t-lg border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition">
+          Skills & JD Match
+        </button>
+        <button data-tab="tab-impact" class="tab-btn px-3 py-2 font-medium rounded-t-lg border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition">
+          Bullet Impact & Verbs
+        </button>
+        <button data-tab="tab-recommendations" class="tab-btn px-3 py-2 font-medium rounded-t-lg border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition">
+          Fixes & Suggestions
+        </button>
+        <button data-tab="tab-raw" class="tab-btn px-3 py-2 font-medium rounded-t-lg border-b-2 border-transparent text-zinc-400 hover:text-zinc-200 transition">
+          Parsed ATS Structure
+        </button>
+      </div>
+
+      <!-- TAB 1: ATS Health & Checklist -->
+      <div id="tab-checklist" class="tab-content space-y-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          
+          <!-- Section Headers Presence -->
+          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-zinc-200 mb-3 flex items-center gap-2">
+              <i data-lucide="layers" class="w-4 h-4 text-zinc-400"></i> Standard Section Verification
+            </h3>
+            <div id="section-checklist" class="space-y-2 text-xs">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+          <!-- Document Formatting & Health -->
+          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-zinc-200 mb-3 flex items-center gap-2">
+              <i data-lucide="file-text" class="w-4 h-4 text-zinc-400"></i> Format & ATS Cleanliness
+            </h3>
+            <div id="format-checklist" class="space-y-2 text-xs">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Score Breakdown Cards -->
+        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
+          <h3 class="text-sm font-semibold text-zinc-200 mb-4 flex items-center gap-2">
+            <i data-lucide="bar-chart-2" class="w-4 h-4 text-zinc-400"></i> ATS Evaluation Score Breakdown
+          </h3>
+          <div id="score-breakdown-bars" class="space-y-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: Skills & JD Gap Analysis -->
+      <div id="tab-skills" class="tab-content hidden space-y-6">
+        
+        <!-- Job Description Match Overview (if provided) -->
+        <div id="jd-match-panel" class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5 hidden">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-sm font-semibold text-zinc-200 flex items-center gap-2">
+              <i data-lucide="crosshair" class="w-4 h-4 text-emerald-400"></i> Job Description Skill Alignment
+            </h3>
+            <span id="jd-match-badge" class="px-2 py-0.5 rounded text-xs font-mono font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+              85% Match
+            </span>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <p class="text-xs font-medium text-emerald-400 mb-2 flex items-center gap-1.5">
+                <i data-lucide="check" class="w-3.5 h-3.5"></i> Matched Required Skills (<span id="matched-skills-count">0</span>)
+              </p>
+              <div id="matched-skills-chips" class="flex flex-wrap gap-1.5">
+                <!-- Chips -->
+              </div>
+            </div>
+
+            <div>
+              <p class="text-xs font-medium text-rose-400 mb-2 flex items-center gap-1.5">
+                <i data-lucide="alert-circle" class="w-3.5 h-3.5"></i> Missing Critical Skills (<span id="missing-skills-count">0</span>)
+              </p>
+              <div id="missing-skills-chips" class="flex flex-wrap gap-1.5">
+                <!-- Chips -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Missing keywords list -->
+          <div id="missing-keywords-wrapper" class="mt-4 pt-3 border-t border-zinc-800/80">
+            <p class="text-[11px] text-zinc-400 mb-1.5">Top JD Keywords Not Found in Resume:</p>
+            <div id="missing-keywords-chips" class="flex flex-wrap gap-1.5"></div>
+          </div>
+        </div>
+
+        <!-- All Detected Resume Skills by Category -->
+        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
+          <h3 class="text-sm font-semibold text-zinc-200 mb-4 flex items-center gap-2">
+            <i data-lucide="boxes" class="w-4 h-4 text-zinc-400"></i> Detected Resume Skills by Category
+          </h3>
+          <div id="categorized-skills-container" class="space-y-4">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB 3: Bullet Impact & Verbs -->
+      <div id="tab-impact" class="tab-content hidden space-y-6">
+        
+        <!-- Action Verbs Overview -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-zinc-200 mb-2 flex items-center gap-2">
+              <i data-lucide="zap" class="w-4 h-4 text-amber-400"></i> Strong Power Verbs Detected
+            </h3>
+            <p class="text-xs text-zinc-400 mb-3">Power verbs convey decisive action and leadership.</p>
+            <div id="power-verbs-chips" class="flex flex-wrap gap-1.5">
+              <!-- Chips -->
+            </div>
+          </div>
+
+          <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
+            <h3 class="text-sm font-semibold text-zinc-200 mb-2 flex items-center gap-2">
+              <i data-lucide="alert-triangle" class="w-4 h-4 text-rose-400"></i> Weak or Passive Language
+            </h3>
+            <p class="text-xs text-zinc-400 mb-3">Replace passive phrases with direct accomplishment verbs.</p>
+            <div id="weak-verbs-list" class="space-y-2 text-xs">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+        </div>
+
+        <!-- Bullets with Quantifiable Metrics -->
+        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
+          <h3 class="text-sm font-semibold text-zinc-200 mb-2 flex items-center gap-2">
+            <i data-lucide="hash" class="w-4 h-4 text-purple-400"></i> Measurable Impact Bullets
+          </h3>
+          <p class="text-xs text-zinc-400 mb-3">Bullet points detected with concrete metrics (%, $, scale, or volume):</p>
+          <div id="impact-bullets-list" class="space-y-2.5">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+        <!-- Bullet Point Rewriter (STAR / XYZ Suggestions) -->
+        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
+          <h3 class="text-sm font-semibold text-zinc-200 mb-2 flex items-center gap-2">
+            <i data-lucide="sparkles" class="w-4 h-4 text-blue-400"></i> Suggested Bullet Point Upgrades (Google XYZ Formula)
+          </h3>
+          <p class="text-xs text-zinc-400 mb-4">Formula: <span class="font-mono text-zinc-300">Accomplished [X] as measured by [Y] by doing [Z]</span></p>
+          <div id="bullet-rewrites-list" class="space-y-3">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- TAB 4: Fixes & Recommendations -->
+      <div id="tab-recommendations" class="tab-content hidden space-y-4">
+        <div class="flex items-center justify-between pb-2">
+          <h3 class="text-sm font-semibold text-zinc-200">Prioritized Action Items</h3>
+          <span class="text-xs text-zinc-500">Ranked by ATS impact</span>
+        </div>
+        <div id="recommendations-container" class="space-y-3">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- TAB 5: Parsed ATS Structure -->
+      <div id="tab-raw" class="tab-content hidden space-y-4">
+        <div class="bg-zinc-900/60 border border-zinc-800 rounded-xl p-5">
+          <div class="flex items-center justify-between mb-3">
+            <h3 class="text-sm font-semibold text-zinc-200 flex items-center gap-2">
+              <i data-lucide="terminal" class="w-4 h-4 text-zinc-400"></i> Extracted Text & Parser Verification
+            </h3>
+            <span class="text-xs text-zinc-500">Verifies how ATS sees your layout</span>
+          </div>
+          <p class="text-xs text-zinc-400 mb-3">
+            If words are scrambled, merged, or missing here, ATS parsers will fail to read your resume correctly. Ensure single-column formatting without tables or textboxes.
+          </p>
+          <pre id="raw-text-display" class="bg-zinc-950 border border-zinc-800 rounded-lg p-4 text-xs font-mono text-zinc-300 overflow-x-auto max-h-96 whitespace-pre-wrap"></pre>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- Minimal Footer -->
+  <footer class="border-t border-zinc-800/80 py-6 text-center text-xs text-zinc-500 no-print">
+    <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+      <p>ResuMetrics Local Engine &bull; Private, Fast, Offline Analysis</p>
+      <p class="text-zinc-600">Built for Software Engineers & Tech Professionals</p>
+    </div>
+  </footer>
+
+  <!-- Toast Notification Container -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-16 opacity-0 transition-all duration-300 bg-zinc-900 text-zinc-100 border border-zinc-700 px-4 py-2.5 rounded-lg shadow-xl text-xs flex items-center gap-2">
+    <i data-lucide="info" id="toast-icon" class="w-4 h-4 text-emerald-400"></i>
+    <span id="toast-msg">Notification</span>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
